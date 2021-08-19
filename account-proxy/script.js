@@ -89,7 +89,7 @@ const generatePlayerRequestInit = async function (videoId, clientName, clientVer
         "X-Youtube-Client-Version": clientVersion,
         "Accept-Language": "en-US;q=0.8,en;q=0.7",
         "Origin": origin,
-        "Referer": "https://www.youtube.com/watch?v=ENdgyD7Uar4"
+        "Referer": "https://www.youtube.com/watch?v=" + videoId
     }
     return {
       method: 'POST',
@@ -132,6 +132,12 @@ async function handleRequest(request) {
   const signatureTimestamp = parseInt(searchParams.get('signatureTimestamp'))
 
   const init = await generatePlayerRequestInit(videoId, clientName, clientVersion, signatureTimestamp)
-  return fetch('https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8', init)
+  const player_fetch = await fetch('https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8', init)
+  const player_response = await player_fetch.json()
+  return new Response(JSON.stringify(player_response), {
+      headers: {
+          "Access-Control-Allow-Origin": "*"
+      }
+  })
   //return fetch("https://welcome.developers.workers.dev");
 }
