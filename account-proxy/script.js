@@ -101,7 +101,8 @@ const generatePlayerRequestInit = async function (videoId, clientName, clientVer
     return {
       method: 'POST',
       headers: headers,
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      cf: {cacheTtl: 600}
     }
 }
 
@@ -143,7 +144,7 @@ async function handleRequest(request) {
               status: 403,
           })
       }
-      return fetch(url)
+      return fetch(url, {cf: {cacheTtl: 3600}})
   }
   if (!searchParams.get('videoId') || searchParams.get('videoId').length !== 11) {
     return new Response('videoId is not found or is invalid', {
