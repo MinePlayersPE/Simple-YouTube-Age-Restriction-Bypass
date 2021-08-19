@@ -113,6 +113,12 @@ async function handleRequest(request) {
   }
   if (pathname.startsWith("/direct/")) {
       url = atob(pathname.substring(8))
+      parsed_url = new URL(url)
+      if (!(parsed_url.hostname.indexOf(".googlevideo.com") > 0)) {
+          return new Response('Proxied URL not from googlevideo.com', {
+              status: 403,
+          })
+      }
       return fetch(url)
   }
   if (!searchParams.get('videoId') || searchParams.get('videoId').length !== 11) {
