@@ -13,10 +13,10 @@ addEventListener("fetch", (event) => {
   );
 });
 
-const timenameNameToOffset = function() { // https://stackoverflow.com/a/68593283
+const timenameNameToOffset = function(tz) { // https://stackoverflow.com/a/68593283
   const date = new Date()
   const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
-  const tzDate = new Date(date.toLocaleString('en-US', { timeZone: "Asia/Jakarta" }));
+  const tzDate = new Date(date.toLocaleString('en-US', { timeZone: tz }));
   return (tzDate.getTime() - utcDate.getTime()) / 6e4;
 }
 const generateSidBasedAuth = async function (sapisid, origin) {
@@ -161,7 +161,8 @@ async function handleRequest(request) {
   const player_response = await player_fetch.json()
   return new Response(JSON.stringify(stripPlayerResponse(player_response)), {
       headers: {
-          "Access-Control-Allow-Origin": "*"
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json"
       }
   })
   //return fetch("https://welcome.developers.workers.dev");
