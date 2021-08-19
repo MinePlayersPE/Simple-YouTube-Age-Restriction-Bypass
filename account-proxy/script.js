@@ -98,6 +98,20 @@ const generatePlayerRequestInit = async function (videoId, clientName, clientVer
     }
 }
 
+const stripPlayerResponse = function (response) {
+    return {
+        "playabilityStatus": response.playabilityStatus,
+        "streamingData": response.streamingData,
+        "videoDetails": response.videoDetails,
+        "playerConfig": response.playerConfig, // Needs more thorough checking?
+        "storyboards": response.storyboards,
+        "microformat": response.microformat, // WEB
+        "attestation": response.attestation,
+        "auxiliaryUi": response.auxiliaryUi, // ANDROID
+        "overlay": response.overlay // IOS
+    }
+}
+
 /**
  * Many more examples available at:
  *   https://developers.cloudflare.com/workers/examples
@@ -134,7 +148,7 @@ async function handleRequest(request) {
   const init = await generatePlayerRequestInit(videoId, clientName, clientVersion, signatureTimestamp)
   const player_fetch = await fetch('https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8', init)
   const player_response = await player_fetch.json()
-  return new Response(JSON.stringify(player_response), {
+  return new Response(JSON.stringify(stripPlayerResponse(player_response)), {
       headers: {
           "Access-Control-Allow-Origin": "*"
       }
