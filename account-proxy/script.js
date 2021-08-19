@@ -13,6 +13,12 @@ addEventListener("fetch", (event) => {
   );
 });
 
+const timenameNameToOffset = function() { // https://stackoverflow.com/a/68593283
+  const date = new Date()
+  const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+  const tzDate = new Date(date.toLocaleString('en-US', { timeZone: "Asia/Jakarta" }));
+  return (tzDate.getTime() - utcDate.getTime()) / 6e4;
+}
 const generateSidBasedAuth = async function (sapisid, origin) {
   const timestamp = Math.floor(new Date().getTime() / 1000);
   const input = timestamp + " " + sapisid + " " + origin;
@@ -21,10 +27,11 @@ const generateSidBasedAuth = async function (sapisid, origin) {
   const hash = hash_array.map(b => b.toString(16).padStart(2, '0')).join('');
   return "SAPISIDHASH " + timestamp + "_" + hash;
 }
-const generatePlayerRequestInit = async function (videoId, clientName, clientVersion, signatureTimestamp) {
+const generatePlayerRequestInit = async function (videoId, clientName, clientVersion, signatureTimestamp, request) {
     if (!clientName) clientName = "WEB";
     if (!clientVersion) clientVersion = clientDefaults[clientName];
     if (!signatureTimestamp) signatureTimestamp = Math.floor(new Date().getTime()/86400000);
+    const cfprops = request?.cf
     const origin = "https://www.youtube.com";
 
     const body = {
@@ -32,22 +39,22 @@ const generatePlayerRequestInit = async function (videoId, clientName, clientVer
         "context": {
             "client": {
                 "hl": "en",
-                "gl": "US",
+                "gl": cfprops?.country || "US",
                 "deviceMake": "",
                 "deviceModel": "",
-                "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36,gzip(gfe)",
+                "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0,gzip(gfe)",
                 "clientName": clientName,
                 "clientVersion": clientVersion,
                 "originalUrl": "https://www.youtube.com/watch?v=" + videoId,
                 "screenPixelDensity": 1,
                 "clientFormFactor": "UNKNOWN_FORM_FACTOR",
                 "screenDensityFloat": 1,
-                "timeZone": "Asia/Jakarta",
-                "browserName": "Chrome",
-                "browserVersion": "91.0.4472.164",
+                "timeZone": cfprops?.timezone || "Asia/Jakarta",
+                "browserName": "Firefox",
+                "browserVersion": "91.0",
                 "screenWidthPoints": 1920,
                 "screenHeightPoints": 1080,
-                "utcOffsetMinutes": 420,
+                "utcOffsetMinutes": cfprops?.timezone ? timenameNameToOffset(cfprops.timezone) : 420,
                 "userInterfaceTheme": "USER_INTERFACE_THEME_DARK",
                 "connectionType": "CONN_CELLULAR_4G",
                 "playerType": "UNIPLAYER",
@@ -81,13 +88,13 @@ const generatePlayerRequestInit = async function (videoId, clientName, clientVer
     }
     const headers =  {
         "Cookie": `SAPISID=${SAPISID}; __Secure-3PAPISID=${SAPISID}; __Secure-3PSID=${PSID};`,
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0,gzip(gfe)",
         "Content-Type": "application/json",
         "Authorization": await generateSidBasedAuth(SAPISID, origin),
         "X-Origin": origin,
         "X-Youtube-Client-Name": clientName,
         "X-Youtube-Client-Version": clientVersion,
-        "Accept-Language": "en-US;q=0.8,en;q=0.7",
+        "Accept-Language": "en-US,en;q=0.5",
         "Origin": origin,
         "Referer": "https://www.youtube.com/watch?v=" + videoId
     }
@@ -148,7 +155,7 @@ async function handleRequest(request) {
   const clientVersion = searchParams.get('clientVersion')
   const signatureTimestamp = parseInt(searchParams.get('signatureTimestamp'))
 
-  const init = await generatePlayerRequestInit(videoId, clientName, clientVersion, signatureTimestamp)
+  const init = await generatePlayerRequestInit(videoId, clientName, clientVersion, signatureTimestamp, request)
   const player_fetch = await fetch('https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8', init)
   const player_response = await player_fetch.json()
   return new Response(JSON.stringify(stripPlayerResponse(player_response)), {
