@@ -2,7 +2,6 @@ const clientDefaults = {
     "WEB": "2.20210721.00.00",
     "ANDROID": "16.29.39",
     "IOS": "16.29.39"
-
 }
 const encoder = new TextEncoder();
 addEventListener("fetch", (event) => {
@@ -102,11 +101,14 @@ const stripPlayerResponse = function (response) {
     return {
         "playabilityStatus": response.playabilityStatus,
         "streamingData": response.streamingData,
+        "captions": response.captions,
         "videoDetails": response.videoDetails,
         "playerConfig": response.playerConfig, // Needs more thorough checking?
         "storyboards": response.storyboards,
         "microformat": response.microformat, // WEB
+        "cards": response.cards,
         "attestation": response.attestation,
+        "endscreen": response.endscreen,
         "auxiliaryUi": response.auxiliaryUi, // ANDROID
         "overlay": response.overlay // IOS
     }
