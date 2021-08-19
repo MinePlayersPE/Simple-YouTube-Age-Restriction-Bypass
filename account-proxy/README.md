@@ -5,6 +5,8 @@
 
 This is the account proxy server rewritten to be a single script, easily installable on a cloudflare worker. It also acts as the video proxy (to prevent region mismatch between account and video proxy). You can sign up for a Cloudflare account and deploy your own account proxy using your age-verified YouTube account. (TODO: enable age-unverified account bypass)
 
+<b>Disclaimer: Currently, this doesn't strip potentially identifiable info in the player response. Use this at your own risk (e.g. personal use only)</b>
+
 ### Installation (TODO)
 1. <a href="https://dash.cloudflare.com/?to=/:account/workers">Sign in/up to Cloudflare and open the Worker Dashboard.</a>
 2. On the dashboard, click Create a Worker, then paste `script.js` to the script tab (left side).
