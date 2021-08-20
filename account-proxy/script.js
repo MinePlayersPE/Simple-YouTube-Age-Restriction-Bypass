@@ -137,14 +137,27 @@ async function handleRequest(request) {
     });
   }
   if (pathname.startsWith("/direct/")) {
-      url = atob(pathname.substring(8))
-      parsed_url = new URL(url)
+      try {
+        url = atob(pathname.substring(8))
+        parsed_url = new URL(url)
+      } catch (e) {
+          return new Response(e.message, {
+              status: 400,
+          })
+      }
       if (!(parsed_url.hostname.indexOf(".googlevideo.com") > 0)) {
           return new Response('Proxied URL not from googlevideo.com', {
               status: 403,
           })
       }
-      return fetch(url, {cf: {cacheTtl: 3600}})
+      return fetch(url, {
+          cf: {
+              // As per https://www.cloudflare.com/supplemental-terms/#cloudflare-pages-and-cloudflare-workersr,
+              // You are not allowed to "serve" video files via a Cloudflare Worker.
+              // However, only proxing it should be fine?
+              cacheTtl: 0
+          }
+      })
   }
   if (!searchParams.get('videoId') || searchParams.get('videoId').length !== 11) {
     return new Response('videoId is not found or is invalid', {
