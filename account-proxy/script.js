@@ -155,7 +155,7 @@ async function handleRequest(request) {
           cf: {
               // As per https://www.cloudflare.com/supplemental-terms/#cloudflare-pages-and-cloudflare-workersr,
               // You are not allowed to "serve" video files via a Cloudflare Worker.
-              // However, only proxing it should be fine?
+              // However, only proxing it might be fine?
               cacheTtl: 0
           }
       })
