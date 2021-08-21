@@ -1,3 +1,4 @@
+const VideoProxyEnabled = false;
 const clientDefaults = {
     "WEB": "2.20210818.00.00",
     "WEB_REMIX": "1.20210804.00.00",
@@ -131,12 +132,12 @@ const stripPlayerResponse = function (response) {
  */
 async function handleRequest(request) {
   const { pathname, searchParams } = new URL(request.url);
-  if (!pathname.startsWith("/getPlayer") && !pathname.startsWith("/direct/")) {
-    return new Response('This server only serves the /getPlayer and /direct/ endpoint.', {
+  if (!pathname.startsWith("/getPlayer") && !(pathname.startsWith("/direct/") && VideoProxyEnabled)) {
+    return new Response('This server only serves the /getPlayer' + VideoProxyEnabled? ' and /direct/' : ''  + ' endpoint.', {
       status: 404,
     });
   }
-  if (pathname.startsWith("/direct/")) {
+  if (pathname.startsWith("/direct/") && VideoProxyEnabled) {
       try {
         url = atob(pathname.substring(8))
         parsed_url = new URL(url)

@@ -3,9 +3,9 @@
 <b>Note: This is not a part of the browser script!</b>
 <br>If you only want to watch age-restricted videos, follow <a href="https://github.com/zerodytrash/Simple-YouTube-Age-Restriction-Bypass#installation">these instructions</a> (but why would you be looking at this branch anyway)</a>.
 
-This is the account proxy server rewritten to be a single script, easily installable on a cloudflare worker. It also acts as the video proxy (to prevent region mismatch between account and video proxy). You can sign up for a Cloudflare account and deploy your own account proxy using your age-verified YouTube account. (TODO: enable age-unverified account bypass)
+This is the account proxy server rewritten to be a single script, easily installable on a cloudflare worker. It may also act as the video proxy (to prevent region mismatch between account and video proxy), however it is disabled by default (see disclaimer below). You can sign up for a Cloudflare account and deploy your own account proxy using your age-verified YouTube account. (TODO: enable age-unverified account bypass)
 
-<b>Disclaimer: <i>This may break Cloudflare's supplemental terms on serving video files.</i> Removing the entire if statement for `/direct/` should remove the video proxy (Region-locked videos will be unplayable without a proxy on the same country as the Cloudflare datacenter). This script doesn't completely strip potentially identifiable info in the player response either. Use this at your own risk (e.g. personal use only)</b>
+<b>Disclaimer: Setting the `VideoProxyEnabled` constant to true will enable the video proxy. <i>However, this might (probably will) break Cloudflare's supplemental terms on serving video files.</i> This script hasn't been fully tested to confirm that it completely strips out potentially identifiable info in the player response either. Use this at your own risk (e.g. personal use only)</b>
 
 ### Installation (TODO)
 1. <a href="https://dash.cloudflare.com/?to=/:account/workers">Sign in/up to Cloudflare and open the Worker Dashboard.</a>
