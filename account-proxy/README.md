@@ -11,9 +11,4 @@ This is the account proxy server rewritten to be a single script, easily install
 1. <a href="https://dash.cloudflare.com/?to=/:account/workers">Sign in/up to Cloudflare and open the Worker Dashboard.</a>
 2. On the dashboard, <a href="https://dash.cloudflare.com/?to=/:account/workers/new">click Create a Worker</a>, then paste `script.js` to the script tab (left side).
 3. Click Save and Deploy, then click the back button.
-4. On the Worker Manager, open the settings tab, then add these environment variables (preferably encrypted):
-
-````
-SAPISID: <Cookie value "SAPISID">
-PSID: <Cookie value "__Secure-3PSID">
-````
+4. On the Worker Manager, open the settings tab, then add a environment variable called `COOKIES` (preferably encrypted) and set the value to the key=value YouTube cookies (which can be gotten by running `document.cookie` on the console)

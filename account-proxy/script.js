@@ -5,7 +5,11 @@ const clientDefaults = {
     "ANDROID": "16.29.39",
     "IOS": "16.29.39"
 }
+
 const encoder = new TextEncoder();
+const findCookie = (cookiename) => COOKIES.match(new RegExp(cookiename + '=(?<value>[^;]*)'))?.groups?.value;
+const SAPISID = findCookie('SAPISID') || findCookie('__Secure-3PAPISID') || ''
+
 addEventListener("fetch", (event) => {
   event.respondWith(
     handleRequest(event.request).catch(
@@ -88,7 +92,7 @@ const generatePlayerRequestInit = async function (videoId, clientName, clientVer
         "contentCheckOk": true
     }
     const headers =  {
-        "Cookie": `SAPISID=${SAPISID}; __Secure-3PAPISID=${SAPISID}; __Secure-3PSID=${PSID};`,
+        "Cookie": COOKIES,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0,gzip(gfe)",
         "Content-Type": "application/json",
         "Authorization": await generateSidBasedAuth(SAPISID, origin),
@@ -133,7 +137,7 @@ const stripPlayerResponse = function (response) {
 async function handleRequest(request) {
   const { pathname, searchParams } = new URL(request.url);
   if (!pathname.startsWith("/getPlayer") && !(pathname.startsWith("/direct/") && VideoProxyEnabled)) {
-    return new Response('This server only serves the /getPlayer' + VideoProxyEnabled? ' and /direct/' : ''  + ' endpoint.', {
+    return new Response('This server only serves the /getPlayer' + (VideoProxyEnabled ? ' and /direct/' : '')  + ' endpoint.', {
       status: 404,
     });
   }
@@ -142,7 +146,7 @@ async function handleRequest(request) {
         url = atob(pathname.substring(8))
         parsed_url = new URL(url)
       } catch (e) {
-          return new Response(e.message, {
+          return new Response('Can\'t parse URL: ' + e.message, {
               status: 400,
           })
       }
@@ -151,7 +155,7 @@ async function handleRequest(request) {
               status: 403,
           })
       }
-      return fetch(url, {
+      const proxyFetch = await fetch(url, {
           cf: {
               // As per https://www.cloudflare.com/supplemental-terms/#cloudflare-pages-and-cloudflare-workersr,
               // You are not allowed to "serve" video files via a Cloudflare Worker.
@@ -159,6 +163,9 @@ async function handleRequest(request) {
               cacheTtl: 0
           }
       })
+      var newRes = new Response(proxyFetch.body, proxyFetch)
+      newRes.headers.set('Access-Control-Allow-Origin', '*')
+      return newRes
   }
   if (!searchParams.get('videoId') || searchParams.get('videoId').length !== 11) {
     return new Response('videoId is not found or is invalid', {
@@ -171,8 +178,10 @@ async function handleRequest(request) {
   const signatureTimestamp = parseInt(searchParams.get('signatureTimestamp'))
 
   const init = await generatePlayerRequestInit(videoId, clientName, clientVersion, signatureTimestamp, request)
+  console.log(init)
   const player_fetch = await fetch('https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8', init)
   const player_response = await player_fetch.json()
+  console.log(player_response)
   return new Response(JSON.stringify(stripPlayerResponse(player_response)), {
       headers: {
           "Access-Control-Allow-Origin": "*",
